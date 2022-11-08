@@ -1,15 +1,38 @@
+
+
 import json
+import os
+import time
+import logging
 import boto3
-import urllib.parse
 import requests
-import base64
-from requests_aws4auth import AWS4Auth
+from datetime import datetime
+from opensearchpy import OpenSearch, RequestsHttpConnection
+
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
+
 
 # credentials = boto3.Session().get_credentials()
 # awsauth = AWS4Auth(credentials.access_key, credentials.secret_key, region, service, session_token=credentials.token)
-
-
+headers = { "Content-Type": "application/json" }
+host = 'search-photo-v4443ixeyns4cfuyhzy5x3dieu.us-east-1.es.amazonaws.com'
+region = 'us-east-1'
+username = "master_user"
+password = "Suits1998*"
+port = 443
+ssl = True
+certs = True
+service = "es"
+os = OpenSearch(
+        hosts=[{'host': host,'port': port}], 
+        http_auth=(username, password), 
+        use_ssl = ssl, 
+        verify_certs=certs, 
+        connection_class=RequestsHttpConnection
+    )
 def rekognition_function(bucket_name, file_name):
+    
     #adding comment in function
     print("Inside function")
     print(bucket_name)
@@ -30,31 +53,6 @@ def rekognition_function(bucket_name, file_name):
     label_names = [x.lower() for x in label_names]
     print("label namesssssss", label_names)
     return label_names
-
-
-def store_json_elastic_search(json_object):
-    region = 'us-east-1' 
-    service = 'es'
-    credentials = boto3.Session().get_credentials()
-    awsauth = AWS4Auth(credentials.access_key, credentials.secret_key, region, service, session_token=credentials.token)
-    
-    host = 'https://search-photos-texbo7x2mjorrx3njqrmkiacha.us-east-1.es.amazonaws.com/'
-    index = 'photos'
-    url = host + index + '/doc'
-    headers = {"Content-Type": "application/json"}
-    
-    url2= 'https://search-photos-texbo7x2mjorrx3njqrmkiacha.us-east-1.es.amazonaws.com/'
-    
-    resp = requests.post(url,auth=awsauth, data = json.dumps(json_object),headers = headers)
-    #url2 = 'https://vpc-photos-texbo7x2mjorrx3njqrmkiacha.us-east-1.es.amazonaws.com/photos/_search?pretty=true&q=*:*'
-    #resp_elastic = requests.get(url2,auth=awsauth,headers={"Content-Type": "application/json"}).json()
-    #print('<------------------GET-------------------->')
-    #print(json.dumps(resp_elastic, indent=4, sort_keys=True))
-    print("Request posted")
-    print(resp.text)
-
-
-    
 def lambda_handler(event, context):
     # TODO implement
     s3 = boto3.client('s3')
@@ -66,7 +64,7 @@ def lambda_handler(event, context):
     file_name = s3Object['object']['key']
     key = s3Object['object']['key']
     response = s3.head_object(Bucket=bucket, Key=key)
-    #print("head_object : " , response)
+    print("head_object : " , response)
     if response["Metadata"]:
         customlabels = response["Metadata"]["customlabels"]
         print("customlabels : ", customlabels)
@@ -90,10 +88,8 @@ def lambda_handler(event, context):
         'createdTimestamp': time_stamp,
         'labels': label_names
     }
-    store_json_elastic_search(json_object)
+    os.index(index = "photo", id = key, body = json_object, refresh = True)
     return {
         'statusCode': 200,
-        'body': json.dumps('Hello from Lambda!')
+        'body': json.dumps('Indexing Successfully done!')
     }
-        
-
