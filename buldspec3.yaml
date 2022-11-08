@@ -1,14 +1,11 @@
-version: 0.2
+version: 0.1
 phases:
   install:
     commands:
-      - echo "install step"
-  pre_build:
-    commands:
-      - echo "pre_build step"
-  build:
-    commands:
-      - aws s3 sync ./Frontend/ "s3://b1-photos"
-  post_build:
-    commands:
-      - echo "post_build step"
+      - aws cloudformation package --template-file Frontend.yml --s3-bucket b1-photos --output-template-file outSamTemplate.yaml
+artifacts:
+  type: zip
+  files:
+    - frontend-template.yml
+    - lambda-template.yml
+    - outSamTemplate.yaml
