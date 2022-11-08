@@ -6,6 +6,5 @@ phases:
 artifacts:
   type: zip
   files:
-    - frontend-template.yml
-    - lambda-template.yml
+    - Frontend.yml
     - outSamTemplate.yaml
