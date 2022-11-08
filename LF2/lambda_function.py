@@ -1,19 +1,54 @@
 import json
+import math
+import dateutil.parser
+import datetime
+import time
+import os
+import logging
 import boto3
 import requests
-from requests_aws4auth import AWS4Auth
+import urllib.parse
+from opensearchpy import OpenSearch, RequestsHttpConnection
+    
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
 
-def push_to_lex(query):
-    #added old comment 1 for checking
-    lex = boto3.client('lex-runtime')
-    print("lex client initialized")
+headers = { "Content-Type": "application/json" }
+host = 'search-photo-v4443ixeyns4cfuyhzy5x3dieu.us-east-1.es.amazonaws.com'
+region = 'us-east-1'
+lex = boto3.client('lex-runtime', region_name=region)
+
+#Setting values to be referenced later in the program
+username = "master_user"
+password = "Suits1998*"
+
+def lambda_handler(event, context):
+    q1 = event["queryStringParameters"]['q']
+    labels = get_labels(q1)
+    if len(labels) != 0:
+        img_paths = get_photo_path(labels)
+
+    if not img_paths:
+        return{
+            'statusCode':404,
+            "headers":{"Access-Control-Allow-Origin":"*","Access-Control-Allow-Methods":"*","Access-Control-Allow-Headers": "*"},
+            'body': json.dumps('No Results found')
+        }
+    else:    
+        return{
+            'statusCode':200,
+            "headers":{"Access-Control-Allow-Origin":"*","Access-Control-Allow-Methods":"*","Access-Control-Allow-Headers": "*"},
+            'body': json.dumps(img_paths)
+        }
+    
+def get_labels(query):
     response = lex.post_text(
         botName='PhotoSearchBot',                 
         botAlias='PhotoSearchBot',
-        userId="abc",           
+        userId="abhinav",           
         inputText=query
     )
-    print("lex-response", response)
+    
     labels = []
     if 'slots' not in response:
         print("No photo collection for query {}".format(query))
@@ -25,50 +60,28 @@ def push_to_lex(query):
                 labels.append(value)
     return labels
 
-
-def search_elastic_search(labels):
-    print("Inside elastic search")
-    region = 'us-east-1' 
-    service = 'es'
-    credentials = boto3.Session().get_credentials()
-    awsauth = AWS4Auth(credentials.access_key, credentials.secret_key, region, service, session_token=credentials.token)
-    url = 'https://search-photos-texbo7x2mjorrx3njqrmkiacha.us-east-1.es.amazonaws.com/photos/_search?q='
+    
+def get_photo_path(keys):
+    os = OpenSearch(
+        hosts = [{'host': host, 'port': 443}],
+        http_auth = (username, password),
+        use_ssl = True,
+        verify_certs = True,
+        connection_class = RequestsHttpConnection
+    )
+    
     resp = []
-    for label in labels:
-        if (label is not None) and label != '':
-            url2 = url+label
-            resp.append(requests.get(url2, auth=awsauth).json())
-    #print (resp)
+    for key in keys:
+        if (key is not None) and key != '':
+            searchData = os.search({"query": {"match": {"labels": key}}})
+            resp.append(searchData)
+    
     output = []
     for r in resp:
         if 'hits' in r:
              for val in r['hits']['hits']:
                 key = val['_source']['objectKey']
                 if key not in output:
-                    output.append("https://b2-photos-album.s3.amazonaws.com/"+key)
-    print(output)
-    return output
+                    output.append('https://photosalbumb2.s3.amazonaws.com/'+key)
     
-
-def lambda_handler(event, context):
-    # TODO implement
-    print(event)
-    q = event['queryStringParameters']['q']
-    print(q)
-    labels = push_to_lex(q)
-    print("labels", labels)
-    if len(labels) != 0:
-        img_paths = search_elastic_search(labels)
-    if not img_paths:
-        return{
-            'statusCode':404,
-            'headers': {"Access-Control-Allow-Origin":"*","Access-Control-Allow-Methods":"*","Access-Control-Allow-Headers": "*"},
-            'body': json.dumps('No Results found')
-        }
-    else:  
-        print(img_paths)
-        return{
-            'statusCode': 200,
-            'headers': {"Access-Control-Allow-Origin":"*","Access-Control-Allow-Methods":"*","Access-Control-Allow-Headers": "*"},
-            'body': json.dumps(img_paths)
-        }
+    return output
