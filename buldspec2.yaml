@@ -8,7 +8,7 @@ phases:
       - echo "pre_build step"
   build:
     commands:
-      - aws s3 sync ./Frontend/ "s3://photosalbumb1"
+      - aws s3 sync ./Frontend/ "s3://b1-photos"
   post_build:
     commands:
       - echo "post_build step"
