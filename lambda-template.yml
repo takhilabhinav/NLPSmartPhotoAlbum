@@ -23,7 +23,7 @@ Resources:
   A3L2:
     Type: "AWS::Serverless::Function"
     Properties:
-      FunctionName: search-photos-lf2
+      FunctionName: SearchPhotosLF2
       Handler: lambda_function.lambda_handler
       Runtime: python3.9
       CodeUri: ./LF2
