@@ -6,7 +6,7 @@ Resources:
   A3L1:
     Type: "AWS::Serverless::Function"
     Properties:
-      FunctionName: index-photos-lf1
+      FunctionName: IndexPhotosLF1
       Handler: lambda_function.lambda_handler
       Runtime: python3.9
       CodeUri: ./LF1
