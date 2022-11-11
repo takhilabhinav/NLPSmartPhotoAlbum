@@ -16,7 +16,7 @@ logger.setLevel(logging.DEBUG)
 # credentials = boto3.Session().get_credentials()
 # awsauth = AWS4Auth(credentials.access_key, credentials.secret_key, region, service, session_token=credentials.token)
 headers = { "Content-Type": "application/json" }
-host = 'search-photo-v4443ixeyns4cfuyhzy5x3dieu.us-east-1.es.amazonaws.com'
+host = 'search-photos-57lv4nt7dftei7hiwvpgx2ri4u.us-east-1.es.amazonaws.com'
 region = 'us-east-1'
 username = "master_user"
 password = "Suits1998*"
@@ -88,7 +88,7 @@ def lambda_handler(event, context):
         'createdTimestamp': time_stamp,
         'labels': label_names
     }
-    os.index(index = "photo", id = key, body = json_object, refresh = True)
+    os.index(index = "photos", id = key, body = json_object, refresh = True)
     return {
         'statusCode': 200,
         'body': json.dumps('Indexing Successfully done!')
