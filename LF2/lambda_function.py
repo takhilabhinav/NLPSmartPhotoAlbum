@@ -14,7 +14,7 @@ logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
 headers = { "Content-Type": "application/json" }
-host = 'search-photo-v4443ixeyns4cfuyhzy5x3dieu.us-east-1.es.amazonaws.com'
+host = 'search-photos-57lv4nt7dftei7hiwvpgx2ri4u.us-east-1.es.amazonaws.com'
 region = 'us-east-1'
 lex = boto3.client('lex-runtime', region_name=region)
 
