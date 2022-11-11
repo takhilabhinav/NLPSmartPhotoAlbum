@@ -56,7 +56,7 @@ Resources:
       FunctionName: IndexPhotosLF1
       Handler: lambda_function.lambda_handler
       Runtime: python3.9
-      CodeUri: ./LF1
+      CodeUri: s3://index-lf1/LF1.zip
       Description: LF1
       MemorySize: 128
       Timeout: 30
@@ -81,7 +81,7 @@ Resources:
       FunctionName: SearchPhotosLF2
       Handler: lambda_function.lambda_handler
       Runtime: python3.9
-      CodeUri: ./LF2
+      CodeUri: s3://search-lf2/LF2.zip
       Description: LF2
       MemorySize: 128
       Timeout: 30
@@ -130,7 +130,7 @@ Resources:
   ES:
     Type: "AWS::Elasticsearch::Domain"
     Properties:
-      DomainName: "photo"
+      DomainName: "photos"
       DomainEndpointOptions:
         EnforceHTTPS : true
       EncryptionAtRestOptions:
@@ -150,7 +150,7 @@ Resources:
             Principal:
               AWS: "*"
             Action: "es:*"
-            Resource: "arn:aws:es:us-east-1:824208337648:domain/photo/*"
+            Resource: "arn:aws:es:us-east-1:824208337648:domain/photos/*"
       ElasticsearchClusterConfig:
         DedicatedMasterEnabled: "false"
         InstanceCount: "1"
