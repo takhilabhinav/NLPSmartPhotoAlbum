@@ -1,7 +1,14 @@
-AWSTemplateFormatVersion: "2010-09-09"
-Transform: AWS::Serverless-2016-10-31
-Resources:
-  S3Bucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      CodeUri: ./Frontend
+version: 0.2
+phases:
+  install:
+    commands:
+      - echo "install step"
+  pre_build:
+    commands:
+      - echo "pre_build step"
+  build:
+    commands:
+      - aws s3 sync ./Frontend/ "s3://b2-photos-ad"
+  post_build:
+    commands:
+      - echo "post_build step"
