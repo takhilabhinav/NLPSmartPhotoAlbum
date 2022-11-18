@@ -91,5 +91,5 @@ def lambda_handler(event, context):
     os.index(index = "photos", id = key, body = json_object, refresh = True)
     return {
         'statusCode': 200,
-        'body': json.dumps('Indexing Successfully done!')
+        'body': json.dumps('Indexing Successfully done!!')
     }
